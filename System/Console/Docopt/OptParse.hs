@@ -15,8 +15,7 @@ import System.Console.Docopt.Types
 --   @fmt@ is the OptPattern together with metadata to tell the parser how to parse args.
 --   Together, these let @buildOptParser@ build a parsec parser that can be applied to an argv.
 buildOptParser :: String -> OptFormat -> CharParser OptParserState ()
-buildOptParser delim fmt@(pattern, infomap) =
-
+buildOptParser delim (pattern, infomap) =
   let -- Helpers
       argDelim = (try $ string delim) <?> "space between arguments"
 
@@ -55,7 +54,7 @@ buildOptParser delim fmt@(pattern, infomap) =
             inner_pats = (\pat -> (pat, infomap)) `map` pats
             ps = (buildOptParser delim) `map` inner_pats
             andThen = \p1 p2 -> do
-              p1
+              _ <- p1
               argDelimIfNotInShortOptStack
               p2
   (OneOf pats) ->
@@ -88,7 +87,7 @@ buildOptParser delim fmt@(pattern, infomap) =
       o@(ShortOption c) ->
             do  st <- getState
                 if inShortOptStack st then return () else char '-' >> return ()
-                char c
+                _ <- char c
                 updateState $ updateInShortOptStack True
                 val <- if expectsVal $ M.findWithDefault (fromSynList []) o infomap
                   then try $ do
@@ -104,11 +103,11 @@ buildOptParser delim fmt@(pattern, infomap) =
                               \pa syn info -> saveOccurrence syn info val pa
           <?> humanize o
       o@(LongOption name) ->
-            do string "--"
-               string name
+            do _ <- string "--"
+               _ <- string name
                val <- if expectsVal $ M.findWithDefault (fromSynList []) o infomap
                  then do
-                   string "=" <|> argDelim
+                   _ <- string "=" <|> argDelim
                    --many (notFollowedBy (string delim) >> anyChar)
                    manyTill1 anyChar (lookAhead_ argDelim <|> eof)
                  else return ""
@@ -124,13 +123,13 @@ buildOptParser delim fmt@(pattern, infomap) =
                 unorderedSynParser = buildOptParser delim (Unordered oneOfSyns, infomap)
             in  unorderedSynParser
                 <?> humanize o
-      o@(Argument name) ->
+      o@(Argument _name) ->
             do val <- try $ many1 (notFollowedBy argDelim >> anyChar)
                updateSt_saveOccurrence o val
                updateSt_inShortOptStack False
           <?> humanize o
       o@(Command name) ->
-            do string name
+            do _ <- string name
                updateSt_assertPresent o
                updateSt_inShortOptStack False
           <?> humanize o
@@ -157,7 +156,7 @@ saveOccurrence opt info newval argmap = M.alter updateCurrentVal opt argmap
             Just oldval -> newval `updateFrom` oldval
           updateFrom newval oldval = Just $ case oldval of
             MultiValue vs -> MultiValue $ newval : vs
-            Value v       -> Value newval
+            Value _v      -> Value newval
             NoValue       -> Value newval
             Counted n     -> Counted (n+1)
             Present       -> Present
@@ -185,8 +184,8 @@ optInitialValue :: OptionInfo -> Option -> Maybe ArgValue
 optInitialValue info opt =
   let repeatable = isRepeated info
   in case opt of
-    Command name  -> Just $ if repeatable then Counted 0 else NotPresent
-    Argument name -> Just $ if repeatable then MultiValue [] else NoValue
+    Command _name  -> Just $ if repeatable then Counted 0 else NotPresent
+    Argument _name -> Just $ if repeatable then MultiValue [] else NoValue
     AnyOption     -> Nothing -- no storable value for [options] shortcut
     _             -> case expectsVal info of
       True  -> Just $ if repeatable then MultiValue [] else NoValue
@@ -196,8 +195,8 @@ optDefaultValue :: OptionInfo -> Option -> Maybe ArgValue
 optDefaultValue info opt =
   let repeatable = isRepeated info
   in case opt of
-    Command name  -> Just $ if repeatable then Counted 0 else NotPresent
-    Argument name -> Just $ if repeatable then MultiValue [] else NoValue
+    Command _name  -> Just $ if repeatable then Counted 0 else NotPresent
+    Argument _name -> Just $ if repeatable then MultiValue [] else NoValue
     AnyOption     -> Nothing -- no storable value for [options] shortcut
     _               -> case expectsVal info of
       True  -> case defaultVal info of
