@@ -79,10 +79,16 @@ buildOptParser delim (pattern, infomap) =
                           makeParser $ Optional $ Unordered rest
           _ -> optional $ try $ makeParser pat
   (Repeated pat) -> do
-      case pat of
-        (Optional p) -> (try $ makeParser p) `sepBy` argDelimIfNotInShortOptStack
-        _            -> (try $ makeParser pat) `sepBy1` argDelimIfNotInShortOptStack
-      return ()
+    let repeat = case pat of (Optional _) -> many; _ -> many1
+
+    let repeatee = case pat of
+          Optional (Unordered p) -> OneOf p;
+          Optional p -> p;
+          _ -> pat
+
+    _ <- repeat $ try (makeParser repeatee >> argDelimIfNotInShortOptStack)
+    return ()
+
   (Atom pat) -> case pat of
       o@(ShortOption c) ->
             do  st <- getState

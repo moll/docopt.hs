@@ -92,9 +92,6 @@ testcasesBlacklist (67, 1) = True
 testcasesBlacklist _ = False
 
 regressionsBlacklist :: (Int, Int) -> Bool
--- Failing tests for issue #25, should investigate & fix
-regressionsBlacklist (6, 1) = True
-regressionsBlacklist (6, 2) = True
 regressionsBlacklist _ = False
 
 

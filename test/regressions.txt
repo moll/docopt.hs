@@ -59,6 +59,20 @@ $ prog -I foo -I bar
 
 # Issue #25: Repeatable options with values should be collected
 r"""Usage:
+  prog [--include]... <dir>...
+
+Options:
+  --include=<i>, -I    stuff to include
+"""
+$ prog -I foo baz
+{"--include": ["foo"], "-I": ["foo"], "<dir>": ["baz"]}
+
+$ prog -I foo -I bar baz
+{"--include": ["foo","bar"], "-I": ["foo","bar"], "<dir>": ["baz"]}
+
+
+# Issue #25: Repeatable options with values should be collected
+r"""Usage:
   prog [options]...
 
 Options:
