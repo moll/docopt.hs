@@ -156,6 +156,7 @@ testsFromDocoptSpecFile name testFile ignore =
                       ++ testDescLines
                       ++ ["(Blacklisted)" | blacklisted]
                       ++ ["Failure: " ++ red (BS.unpack $ encode parsedArgsJSON)]
+                      ++ [red argParseMsg]
 
       let ti = TestCase $ testCaseSuccess @? testMsg
 
