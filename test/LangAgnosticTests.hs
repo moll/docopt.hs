@@ -18,7 +18,6 @@ import Data.Aeson
 import qualified Data.ByteString.Lazy.Char8 as BS
 
 import Test.HUnit
-import Paths_docopt (getDataFileName)
 
 
 instance ToJSON ArgValue where
@@ -50,10 +49,10 @@ magenta = coloredString Magenta
 
 main :: IO ()
 main = do
-  referenceTestsFile <- (getDataFileName >=> readFile) "test/testcases.docopt"
+  referenceTestsFile <- readFile "test/testcases.docopt"
   referenceTests <- testsFromDocoptSpecFile "testcases.docopt" referenceTestsFile testcasesBlacklist
 
-  regressionTestsFile <- (getDataFileName >=> readFile) "test/regressions.txt"
+  regressionTestsFile <- readFile "test/regressions.txt"
   regressionTests <- testsFromDocoptSpecFile "regressions.txt" regressionTestsFile regressionsBlacklist
 
   counts <- runTestTT $ TestList $ referenceTests ++ regressionTests
