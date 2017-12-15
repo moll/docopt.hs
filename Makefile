@@ -5,8 +5,8 @@ love: .cabal-sandbox
 
 .cabal-sandbox:
 	cabal sandbox init
-	cabal configure --disable-optimization --enable-executable-dynamic  --enable-tests
-	cabal install --only-dependencies
+	cabal install --only-dependencies --enable-tests
+	cabal configure --disable-optimization --enable-tests
 
 test:
 	@cabal test --test-options="$(TEST_OPTS)"
