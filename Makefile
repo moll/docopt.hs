@@ -1,22 +1,28 @@
-TEST_OPTS = --color --rerun --rerun-all-on-success
+TEST =
+TEST_OPTS = --color
 
-love: .cabal-sandbox
-	@echo "Feel like makin' love."
+love: cabal.project.local
+love: compile
 
-.cabal-sandbox:
-	cabal sandbox init
-	cabal install --only-dependencies --enable-tests
-	cabal configure --disable-optimization --enable-tests
+compile:
+	cabal v2-build lib:docopt
+
+autocheck:
+	ghcid -c "cabal v2-repl" --warnings
 
 test:
-	@cabal test --test-options="$(TEST_OPTS)"
+	@cabal v2-run test:tests -- --format=progress $(TEST_OPTS) $(TEST)
 
-autotest:
-	ghcid -c "cabal exec ghci" --warnings --test ":main" test/LangAgnosticTests.hs
+spec:
+	@cabal v2-run test:tests -- --format=specdoc $(TEST_OPTS) $(TEST)
+
+cabal.project.local:
+	cabal v2-configure --enable-tests --enable-optimization=0
 
 clean:
-	cabal clean
+	cabal v2-clean
 
 .PHONY: love
-.PHONY: test spec autotest autospec
+.PHONY: compile
+.PHONY: test spec
 .PHONY: clean
