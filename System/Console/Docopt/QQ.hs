@@ -51,12 +51,12 @@ docoptExp rawUsg = do
 -- For help with the docopt usage format, see
 -- <https://github.com/docopt/docopt.hs/blob/master/README.md#help-text-format the readme on github>.
 docopt :: QuasiQuoter
-docopt = QuasiQuoter { quoteExp  = docoptExp
-                     , quoteDec  = unsupported "Declaration"
-                     , quotePat  = unsupported "Pattern"
-                     , quoteType = unsupported "Type"
-                     }
-    where unsupported = fail . (++ " context unsupported")
+docopt = QuasiQuoter{
+  quoteExp = docoptExp,
+  quoteDec = const $ fail "Declaration context unsupported",
+  quotePat = const $ fail "Pattern context unsupported",
+  quoteType = const $ fail "Type context unsupported"
+}
 
 -- | Same as 'docopt', but parses the given file instead of a literal
 -- string.
